@@ -1,4 +1,4 @@
-# Memory Map (Phase 1)
+# Pinlore (Phase 1)
 
 Memory Map is a simple personal memory atlas where users can click the map, name a location, and save it as a pin.
 
