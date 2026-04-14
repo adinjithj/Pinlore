@@ -178,25 +178,8 @@ function renderPin(pin) {
     opacity: 0.95,
     sticky: true,
   });
-  marker.bindPopup(
-    `
-      <div class="pin-popup">
-        <label>${pin.name}</label>
-        <button type="button" class="remove-pin-btn" data-pin-id="${pin.id}">Remove Pin</button>
-      </div>
-    `
-  );
-
-  marker.on("popupopen", () => {
-    const popupEl = marker.getPopup().getElement();
-    const removeButton = popupEl.querySelector(".remove-pin-btn");    
-    if (!removeButton) {
-      return;
-    }
-
-    removeButton.addEventListener("click", () => {
-      removePin(pin.id);
-    });
+  marker.on("click", () => {
+    openPinDetailModal(pin.id);
   });
 }
 
@@ -231,6 +214,163 @@ function removePin(pinId) {
   pins.splice(pinIndex, 1);
   savePinsToStorage();
   renderAllPins();
+}
+
+function openPinDetailModal(pinId) {
+  const pin = pins.find((item) => item.id === pinId);
+  if (!pin) {
+    return;
+  }
+
+  closePinDetailModal();
+
+  const modal = document.createElement("div");
+  modal.id = "pinDetailModal";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.innerHTML = `
+    <div id="pinDetailBackdrop" style="position:fixed;inset:0;z-index:2200;background:rgba(5,12,22,0.42);display:grid;place-items:center;padding:1rem;">
+      <div id="pinDetailCard" style="width:min(92vw,460px);max-height:90vh;overflow:auto;background:var(--bg-panel);color:var(--text-main);border:1px solid var(--border-soft);border-radius:14px;box-shadow:var(--shadow-soft);padding:1rem;display:flex;flex-direction:column;gap:0.6rem;">
+        <h2 style="margin:0 0 0.2rem 0;font-size:1.05rem;">Edit Memory</h2>
+        <label for="pinDetailName" style="font-size:0.84rem;color:var(--text-muted);">Name</label>
+        <input id="pinDetailName" type="text" maxlength="80" style="width:100%;border:1px solid var(--border-soft);border-radius:10px;padding:0.58rem 0.72rem;background:transparent;color:inherit;" />
+        <label for="pinDetailNotes" style="font-size:0.84rem;color:var(--text-muted);">Notes</label>
+        <textarea id="pinDetailNotes" rows="5" style="width:100%;resize:vertical;border:1px solid var(--border-soft);border-radius:10px;padding:0.58rem 0.72rem;background:transparent;color:inherit;"></textarea>
+        <label for="pinDetailPhoto" style="font-size:0.84rem;color:var(--text-muted);">Photo</label>
+        <input id="pinDetailPhoto" type="file" accept="image/*" />
+        <img id="pinDetailPreview" alt="Pin photo preview" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;border:1px solid var(--border-soft);" />
+        <div style="display:flex;gap:0.55rem;justify-content:flex-end;margin-top:0.2rem;flex-wrap:wrap;">
+          <button type="button" id="pinDetailDelete" style="border:none;border-radius:10px;padding:0.55rem 0.85rem;background:#dc4f4f;color:#fff;cursor:pointer;">Delete</button>
+          <button type="button" id="pinDetailClose" style="border:none;border-radius:10px;padding:0.55rem 0.85rem;background:var(--text-muted);color:#fff;cursor:pointer;">Cancel</button>
+          <button type="button" id="pinDetailSave" style="border:none;border-radius:10px;padding:0.55rem 0.85rem;background:var(--accent);color:#fff;cursor:pointer;">Save</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const backdrop = document.getElementById("pinDetailBackdrop");
+  const card = document.getElementById("pinDetailCard");
+  const nameInput = document.getElementById("pinDetailName");
+  const notesInput = document.getElementById("pinDetailNotes");
+  const photoInput = document.getElementById("pinDetailPhoto");
+  const previewImage = document.getElementById("pinDetailPreview");
+  const saveButton = document.getElementById("pinDetailSave");
+  const deleteButton = document.getElementById("pinDetailDelete");
+  const closeButton = document.getElementById("pinDetailClose");
+
+  if (
+    !backdrop ||
+    !card ||
+    !nameInput ||
+    !notesInput ||
+    !photoInput ||
+    !previewImage ||
+    !saveButton ||
+    !deleteButton ||
+    !closeButton
+  ) {
+    closePinDetailModal();
+    return;
+  }
+
+  nameInput.value = pin.name || "";
+  notesInput.value = pin.notes || "";
+
+  if (pin.photo) {
+    previewImage.src = pin.photo;
+    previewImage.style.display = "block";
+  } else {
+    previewImage.removeAttribute("src");
+    previewImage.style.display = "none";
+  }
+
+  let selectedPhotoFile = null;
+
+  photoInput.addEventListener("change", () => {
+    const file = photoInput.files && photoInput.files[0] ? photoInput.files[0] : null;
+    selectedPhotoFile = file;
+    if (!file) {
+      if (pin.photo) {
+        previewImage.src = pin.photo;
+        previewImage.style.display = "block";
+      } else {
+        previewImage.removeAttribute("src");
+        previewImage.style.display = "none";
+      }
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      previewImage.src = String(reader.result || "");
+      previewImage.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  saveButton.addEventListener("click", async () => {
+    const nextName = nameInput.value.trim();
+    if (!nextName) {
+      nameInput.focus();
+      return;
+    }
+
+    pin.name = nextName;
+    pin.notes = notesInput.value.trim();
+    if (selectedPhotoFile) {
+      try {
+        pin.photo = await fileToBase64(selectedPhotoFile);
+      } catch (error) {
+        console.warn("Could not read selected image.", error);
+        return;
+      }
+    }
+
+    savePinsToStorage();
+    closePinDetailModal();
+    renderAllPins();
+  });
+
+  deleteButton.addEventListener("click", () => {
+    const confirmed = window.confirm("Delete this pin?");
+    if (!confirmed) {
+      return;
+    }
+    closePinDetailModal();
+    removePin(pin.id);
+  });
+
+  closeButton.addEventListener("click", closePinDetailModal);
+
+  backdrop.addEventListener("click", (event) => {
+    if (event.target === backdrop) {
+      closePinDetailModal();
+    }
+  });
+
+  card.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
+  nameInput.focus();
+}
+
+function closePinDetailModal() {
+  const existingModal = document.getElementById("pinDetailModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Could not read selected image."));
+    reader.readAsDataURL(file);
+  });
 }
 
 /* ---------------------------
