@@ -430,7 +430,8 @@ function registerMemorySidebarSearch() {
 
 function initializeSidebarToggle() {
   const sidebar = document.querySelector(".memory-sidebar");
-  if (!sidebar) {
+  const backdrop = document.querySelector(".sidebar-backdrop");
+  if (!sidebar || !backdrop) {
     return;
   }
 
@@ -445,23 +446,18 @@ function initializeSidebarToggle() {
     document.body.classList.toggle("sidebar-open");
   });
 
-  document.addEventListener("click", (event) => {
-    if (window.innerWidth >= 768) {
-      return;
-    }
-    if (!document.body.classList.contains("sidebar-open")) {
-      return;
-    }
-    if (sidebar.contains(event.target) || toggleButton.contains(event.target)) {
-      return;
-    }
+  backdrop.addEventListener("click", () => {
     document.body.classList.remove("sidebar-open");
   });
 
-  window.addEventListener("resize", () => {
-    if (window.innerWidth >= 768) {
-      document.body.classList.remove("sidebar-open");
+  document.addEventListener("click", (event) => {
+    if (!document.body.classList.contains("sidebar-open")) {
+      return;
     }
+    if (sidebar.contains(event.target) || toggleButton.contains(event.target) || backdrop.contains(event.target)) {
+      return;
+    }
+    document.body.classList.remove("sidebar-open");
   });
 }
 
