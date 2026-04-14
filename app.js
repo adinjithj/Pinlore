@@ -454,7 +454,7 @@ function initializeSidebarToggle() {
     if (!document.body.classList.contains("sidebar-open")) {
       return;
     }
-    if (sidebar.contains(event.target) || toggleButton.contains(event.target) || backdrop.contains(event.target)) {
+    if (sidebar.contains(event.target) || toggleButton.contains(event.target)) {
       return;
     }
     document.body.classList.remove("sidebar-open");
