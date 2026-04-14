@@ -104,6 +104,7 @@ body::before {
 }
 
 .memory-sidebar-header {
+  flex-shrink: 0;
   padding: 0.8rem;
   border-bottom: 1px solid var(--border-soft);
   display: flex;
@@ -136,10 +137,30 @@ body::before {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  scroll-behavior: smooth;
   padding: 0.65rem;
   display: flex;
   flex-direction: column;
   gap: 0.52rem;
+}
+
+.memory-sidebar-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.memory-sidebar-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.memory-sidebar-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  background-color: color-mix(in srgb, var(--accent) 38%, rgba(255, 255, 255, 0.2));
+}
+
+.memory-sidebar-list::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--accent) 58%, rgba(255, 255, 255, 0.2));
 }
 
 .memory-sidebar-item {
