@@ -266,7 +266,7 @@ async function fetchSearchSuggestions(query) {
 }
 
 async function fetchSearchResults(query, limit) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=${limit}&q=${encodeURIComponent(query)}`;
+  const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=${limit}&q=${encodeURIComponent(query)}`;
   const response = await fetch(url, {
     headers: {
       Accept: "application/json",
@@ -283,18 +283,31 @@ async function fetchSearchResults(query, limit) {
 
 function filterLocationResults(results) {
   const allowedTypes = new Set(["city", "town", "village", "state", "country"]);
-  const excludedTypes = new Set(["house", "road", "building"]);
-  const excludedClasses = new Set(["amenity"]);
+  const excludedTypes = new Set(["house", "road", "building", "residential", "commercial"]);
+  const excludedClasses = new Set(["amenity", "building", "highway", "shop", "tourism"]);
 
   return results.filter((result) => {
     const type = String(result.type || "").toLowerCase();
     const resultClass = String(result.class || "").toLowerCase();
+    const addresstype = String(result.addresstype || "").toLowerCase();
 
     if (excludedTypes.has(type) || excludedClasses.has(resultClass)) {
       return false;
     }
 
-    return allowedTypes.has(type);
+    if (allowedTypes.has(type) || allowedTypes.has(addresstype)) {
+      return true;
+    }
+
+    if (resultClass === "place" && (allowedTypes.has(type) || allowedTypes.has(addresstype))) {
+      return true;
+    }
+
+    if (resultClass === "boundary" && type === "administrative") {
+      return allowedTypes.has(addresstype);
+    }
+
+    return false;
   });
 }
 
@@ -315,7 +328,7 @@ function renderSearchSuggestions(results) {
     const item = document.createElement("button");
     item.type = "button";
     item.className = "location-search-item";
-    item.textContent = result.display_name || "Unknown location";
+    item.textContent = formatSuggestionLabel(result);
     item.addEventListener("mousedown", (event) => {
       event.preventDefault();
     });
@@ -326,6 +339,32 @@ function renderSearchSuggestions(results) {
   });
 
   locationSearchDropdown.hidden = false;
+}
+
+function formatSuggestionLabel(result) {
+  const address = result.address || {};
+  const primaryName =
+    result.name ||
+    address.city ||
+    address.town ||
+    address.village ||
+    address.state ||
+    address.country ||
+    String(result.display_name || "").split(",")[0] ||
+    "Unknown location";
+
+  const secondaryName =
+    address.country ||
+    address.state ||
+    String(result.display_name || "")
+      .split(",")
+      .slice(1)
+      .join(",")
+      .trim();
+
+  return secondaryName && secondaryName !== primaryName
+    ? `${primaryName}, ${secondaryName}`
+    : primaryName;
 }
 
 function clearSearchSuggestions() {
