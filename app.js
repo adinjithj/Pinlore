@@ -21,6 +21,7 @@ const STORAGE_KEYS = {
 ---------------------------- */
 const pins = loadPinsFromStorage();
 const themeToggleButton = document.getElementById("themeToggle");
+const locationSearchInput = document.getElementById("locationSearchInput");
 
 const markers = new Map();
 
@@ -28,6 +29,7 @@ let map;
 let lightLayer;
 let darkLayer;
 let lifePathLine;
+let searchResultMarker;
 
 /* ---------------------------
    App startup
@@ -37,6 +39,7 @@ initializeMap();
 renderStoredPins();
 attemptLiveLocationCentering();
 registerMapClickHandler();
+registerLocationSearch();
 
 /* ---------------------------
    Theme setup and persistence
@@ -186,6 +189,81 @@ function drawLifePath() {
   }).addTo(map);
 
   lifePathLine.bringToBack();
+}
+
+function registerLocationSearch() {
+  if (!locationSearchInput) {
+    return;
+  }
+
+  locationSearchInput.addEventListener("keydown", async (event) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    const query = locationSearchInput.value.trim();
+    if (!query) {
+      return;
+    }
+
+    await searchLocationAndCenter(query);
+  });
+}
+
+async function searchLocationAndCenter(query) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Search failed with status ${response.status}`);
+    }
+
+    const results = await response.json();
+    if (!Array.isArray(results) || results.length === 0) {
+      window.alert("No locations found.");
+      return;
+    }
+
+    const firstResult = results[0];
+    const lat = Number(firstResult.lat);
+    const lon = Number(firstResult.lon);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      window.alert("Invalid location result.");
+      return;
+    }
+
+    map.setView([lat, lon], 12);
+    showTemporarySearchMarker(lat, lon, firstResult.display_name || query);
+  } catch (error) {
+    console.warn("Location search failed.", error);
+    window.alert("Could not search location right now.");
+  }
+}
+
+function showTemporarySearchMarker(lat, lon, label) {
+  if (searchResultMarker) {
+    map.removeLayer(searchResultMarker);
+    searchResultMarker = null;
+  }
+
+  searchResultMarker = L.marker([lat, lon]).addTo(map);
+  if (label) {
+    searchResultMarker.bindPopup(label).openPopup();
+  }
+
+  setTimeout(() => {
+    if (searchResultMarker) {
+      map.removeLayer(searchResultMarker);
+      searchResultMarker = null;
+    }
+  }, 5000);
 }
 
 /* ---------------------------
