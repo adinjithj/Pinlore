@@ -166,6 +166,25 @@ function renderPin(pin) {
     opacity: 0.95,
     sticky: true,
   });
+  marker.bindPopup(
+    `
+      <div class="pin-popup">
+        <label>${pin.name}</label>
+        <button type="button" class="remove-pin-btn" data-pin-id="${pin.id}">Remove Pin</button>
+      </div>
+    `
+  );
+
+  marker.on("popupopen", () => {
+    const removeButton = document.querySelector(`.remove-pin-btn[data-pin-id="${pin.id}"]`);
+    if (!removeButton) {
+      return;
+    }
+
+    removeButton.addEventListener("click", () => {
+      removePin(pin.id, marker);
+    });
+  });
 }
 
 /* ---------------------------
@@ -188,6 +207,17 @@ function loadPinsFromStorage() {
 
 function savePinsToStorage() {
   localStorage.setItem(STORAGE_KEYS.pins, JSON.stringify(pins));
+}
+
+function removePin(pinId, marker) {
+  const pinIndex = pins.findIndex((pin) => pin.id === pinId);
+  if (pinIndex === -1) {
+    return;
+  }
+
+  pins.splice(pinIndex, 1);
+  savePinsToStorage();
+  map.removeLayer(marker);
 }
 
 /* ---------------------------
