@@ -123,39 +123,37 @@ function openPinNamePopup(latlng) {
     .setContent(popupContent)
     .openOn(map);
 
-  map.once("popupopen", () => {
-    setTimeout(() => {
-      const nameInput = document.getElementById("pinNameInput");
-      const errorText = document.getElementById("pinError");
-      const dropBtn = document.getElementById("dropPinBtn");
+  setTimeout(() => {
+    const nameInput = document.getElementById("pinNameInput");
+    const errorText = document.getElementById("pinError");
+    const dropBtn = document.getElementById("dropPinBtn");
 
-      if (!dropBtn || !nameInput || !errorText) return;
+    if (!dropBtn || !nameInput || !errorText) return;
 
-      nameInput.focus();
+    nameInput.focus();
 
-      dropBtn.addEventListener("click", () => {
-        const name = nameInput.value.trim();
-        if (!name) {
-          errorText.style.display = "block";
-          return;
-        }
+    dropBtn.addEventListener("click", () => {
+      const name = nameInput.value.trim();
+      if (!name) {
+        errorText.style.display = "block";
+        return;
+      }
 
-        const newPin = {
-          id: generateId(),
-          name,
-          lat: latlng.lat,
-          lng: latlng.lng,
-          notes: "",
-          photo: null,
-        };
+      const newPin = {
+        id: generateId(),
+        name,
+        lat: latlng.lat,
+        lng: latlng.lng,
+        notes: "",
+        photo: null,
+      };
 
-        pins.push(newPin);
-        savePinsToStorage();
-        renderPin(newPin);
-        map.closePopup(popup);
-      });
-    }, 50);
-  });
+      pins.push(newPin);
+      savePinsToStorage();
+      renderPin(newPin);
+      map.closePopup(popup);
+    });
+  }, 50);
 }
 
 /* ---------------------------
