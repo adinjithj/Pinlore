@@ -250,13 +250,15 @@ function registerLocationSearch() {
 
 async function fetchSearchSuggestions(query) {
   try {
-    const results = await fetchSearchResults(query, 5);
+    const results = await fetchSearchResults(query, 20);
     if (!results.length) {
       renderSearchSuggestions([]);
       return;
     }
 
-    renderSearchSuggestions(results);
+    const filteredResults = filterLocationResults(results);
+    const suggestions = filteredResults.length ? filteredResults.slice(0, 5) : results.slice(0, 5);
+    renderSearchSuggestions(suggestions);
   } catch (error) {
     console.warn("Location search failed.", error);
     renderSearchSuggestions([]);
@@ -277,6 +279,23 @@ async function fetchSearchResults(query, limit) {
 
   const results = await response.json();
   return Array.isArray(results) ? results.slice(0, limit) : [];
+}
+
+function filterLocationResults(results) {
+  const allowedTypes = new Set(["city", "town", "village", "state", "country"]);
+  const excludedTypes = new Set(["house", "road", "building"]);
+  const excludedClasses = new Set(["amenity"]);
+
+  return results.filter((result) => {
+    const type = String(result.type || "").toLowerCase();
+    const resultClass = String(result.class || "").toLowerCase();
+
+    if (excludedTypes.has(type) || excludedClasses.has(resultClass)) {
+      return false;
+    }
+
+    return allowedTypes.has(type);
+  });
 }
 
 function renderSearchSuggestions(results) {
