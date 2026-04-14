@@ -166,6 +166,14 @@ function drawLifePath() {
     return;
   }
 
+  if (!drawLifePath._timers) {
+    drawLifePath._timers = [];
+  }
+  drawLifePath._timers.forEach((timerId) => clearTimeout(timerId));
+  drawLifePath._timers = [];
+  drawLifePath._token = (drawLifePath._token || 0) + 1;
+  const token = drawLifePath._token;
+
   if (lifePathLine) {
     map.removeLayer(lifePathLine);
     lifePathLine = null;
@@ -178,7 +186,7 @@ function drawLifePath() {
   });
 
   const pathPoints = sortedPins
-    .map((pin) => [pin.lat, pin.lng])
+    .map((pin) => [Number(pin.lat), Number(pin.lng)])
     .filter(([lat, lng]) => Number.isFinite(lat) && Number.isFinite(lng));
 
   if (pathPoints.length < 2) {
@@ -187,17 +195,60 @@ function drawLifePath() {
 
   const accentColor =
     getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2a7fff";
+  const segmentCount = pathPoints.length - 1;
+  const totalDurationMs = 500;
+  const stepDelayMs = Math.max(28, Math.floor(totalDurationMs / segmentCount));
 
-  lifePathLine = L.polyline(pathPoints, {
-    color: accentColor,
-    weight: 3,
-    opacity: 0.72,
-    smoothFactor: 1,
-    lineCap: "round",
-    lineJoin: "round",
-  }).addTo(map);
+  const group = L.layerGroup().addTo(map);
+  lifePathLine = group;
 
-  lifePathLine.bringToBack();
+  const renderAtStep = (step) => {
+    if (token !== drawLifePath._token) {
+      return;
+    }
+
+    group.clearLayers();
+    const visibleSegmentCount = Math.min(step + 1, segmentCount);
+
+    for (let i = 0; i < visibleSegmentCount; i += 1) {
+      const start = pathPoints[i];
+      const end = pathPoints[i + 1];
+      const t = segmentCount <= 1 ? 1 : i / (segmentCount - 1);
+      const segmentOpacity = 0.2 + 0.55 * t;
+
+      const segmentLine = L.polyline([start, end], {
+        color: accentColor,
+        weight: 3,
+        opacity: segmentOpacity,
+        smoothFactor: 2,
+        lineCap: "round",
+        lineJoin: "round",
+      }).addTo(group);
+
+      segmentLine.bringToBack();
+    }
+
+    if (visibleSegmentCount > 0) {
+      const latestStart = pathPoints[visibleSegmentCount - 1];
+      const latestEnd = pathPoints[visibleSegmentCount];
+
+      L.polyline([latestStart, latestEnd], {
+        color: accentColor,
+        weight: 5,
+        opacity: 0.96,
+        smoothFactor: 2,
+        lineCap: "round",
+        lineJoin: "round",
+      }).addTo(group);
+    }
+  };
+
+  for (let step = 0; step < segmentCount; step += 1) {
+    const timerId = setTimeout(() => {
+      renderAtStep(step);
+    }, step * stepDelayMs);
+    drawLifePath._timers.push(timerId);
+  }
 }
 
 function registerLocationSearch() {
