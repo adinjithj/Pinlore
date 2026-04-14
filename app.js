@@ -155,7 +155,9 @@ function openPinNamePopup(latlng) {
         name,
         lat: latlng.lat,
         lng: latlng.lng,
+        date: "",
         notes: "",
+        photos: [],
         photo: null,
       };
 
@@ -224,25 +226,47 @@ function openPinDetailModal(pinId) {
 
   closePinDetailModal();
 
+  const initialPhotos = normalizePinPhotos(pin);
+  let photoData = [...initialPhotos];
+
   const modal = document.createElement("div");
   modal.id = "pinDetailModal";
+  modal.className = "pin-detail-modal-root";
   modal.setAttribute("role", "dialog");
   modal.setAttribute("aria-modal", "true");
   modal.innerHTML = `
-    <div id="pinDetailBackdrop" style="position:fixed;inset:0;z-index:2200;background:rgba(5,12,22,0.42);display:grid;place-items:center;padding:1rem;">
-      <div id="pinDetailCard" style="width:min(92vw,460px);max-height:90vh;overflow:auto;background:var(--bg-panel);color:var(--text-main);border:1px solid var(--border-soft);border-radius:14px;box-shadow:var(--shadow-soft);padding:1rem;display:flex;flex-direction:column;gap:0.6rem;">
-        <h2 style="margin:0 0 0.2rem 0;font-size:1.05rem;">Edit Memory</h2>
-        <label for="pinDetailName" style="font-size:0.84rem;color:var(--text-muted);">Name</label>
-        <input id="pinDetailName" type="text" maxlength="80" style="width:100%;border:1px solid var(--border-soft);border-radius:10px;padding:0.58rem 0.72rem;background:transparent;color:inherit;" />
-        <label for="pinDetailNotes" style="font-size:0.84rem;color:var(--text-muted);">Notes</label>
-        <textarea id="pinDetailNotes" rows="5" style="width:100%;resize:vertical;border:1px solid var(--border-soft);border-radius:10px;padding:0.58rem 0.72rem;background:transparent;color:inherit;"></textarea>
-        <label for="pinDetailPhoto" style="font-size:0.84rem;color:var(--text-muted);">Photo</label>
-        <input id="pinDetailPhoto" type="file" accept="image/*" />
-        <img id="pinDetailPreview" alt="Pin photo preview" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;border:1px solid var(--border-soft);" />
-        <div style="display:flex;gap:0.55rem;justify-content:flex-end;margin-top:0.2rem;flex-wrap:wrap;">
-          <button type="button" id="pinDetailDelete" style="border:none;border-radius:10px;padding:0.55rem 0.85rem;background:#dc4f4f;color:#fff;cursor:pointer;">Delete</button>
-          <button type="button" id="pinDetailClose" style="border:none;border-radius:10px;padding:0.55rem 0.85rem;background:var(--text-muted);color:#fff;cursor:pointer;">Cancel</button>
-          <button type="button" id="pinDetailSave" style="border:none;border-radius:10px;padding:0.55rem 0.85rem;background:var(--accent);color:#fff;cursor:pointer;">Save</button>
+    <div id="pinDetailBackdrop" class="pin-detail-backdrop">
+      <div id="pinDetailCard" class="pin-detail-card">
+        <input
+          id="pinDetailName"
+          class="pin-detail-title-input"
+          type="text"
+          maxlength="80"
+          placeholder="Memory title"
+        />
+
+        <input
+          id="pinDetailDate"
+          class="pin-detail-date-input"
+          type="date"
+        />
+
+        <textarea
+          id="pinDetailNotes"
+          class="pin-detail-notes-input"
+          rows="7"
+          placeholder="Write your memory..."
+        ></textarea>
+
+        <section class="pin-detail-photos">
+          <label for="pinDetailPhotos" class="pin-detail-photos-label">Photos</label>
+          <input id="pinDetailPhotos" class="pin-detail-photo-input" type="file" accept="image/*" multiple />
+          <div id="pinDetailPhotoGrid" class="pin-detail-photo-grid"></div>
+        </section>
+
+        <div class="pin-detail-actions">
+          <button type="button" id="pinDetailDelete" class="pin-detail-btn pin-detail-btn-delete">Delete</button>
+          <button type="button" id="pinDetailSave" class="pin-detail-btn pin-detail-btn-save">Save</button>
         </div>
       </div>
     </div>
@@ -253,64 +277,50 @@ function openPinDetailModal(pinId) {
   const backdrop = document.getElementById("pinDetailBackdrop");
   const card = document.getElementById("pinDetailCard");
   const nameInput = document.getElementById("pinDetailName");
+  const dateInput = document.getElementById("pinDetailDate");
   const notesInput = document.getElementById("pinDetailNotes");
-  const photoInput = document.getElementById("pinDetailPhoto");
-  const previewImage = document.getElementById("pinDetailPreview");
+  const photoInput = document.getElementById("pinDetailPhotos");
+  const photoGrid = document.getElementById("pinDetailPhotoGrid");
   const saveButton = document.getElementById("pinDetailSave");
   const deleteButton = document.getElementById("pinDetailDelete");
-  const closeButton = document.getElementById("pinDetailClose");
 
   if (
     !backdrop ||
     !card ||
     !nameInput ||
+    !dateInput ||
     !notesInput ||
     !photoInput ||
-    !previewImage ||
+    !photoGrid ||
     !saveButton ||
-    !deleteButton ||
-    !closeButton
+    !deleteButton
   ) {
     closePinDetailModal();
     return;
   }
 
   nameInput.value = pin.name || "";
+  dateInput.value = pin.date || "";
   notesInput.value = pin.notes || "";
+  renderPinDetailPhotoGrid(photoData, photoGrid);
 
-  if (pin.photo) {
-    previewImage.src = pin.photo;
-    previewImage.style.display = "block";
-  } else {
-    previewImage.removeAttribute("src");
-    previewImage.style.display = "none";
-  }
-
-  let selectedPhotoFile = null;
-
-  photoInput.addEventListener("change", () => {
-    const file = photoInput.files && photoInput.files[0] ? photoInput.files[0] : null;
-    selectedPhotoFile = file;
-    if (!file) {
-      if (pin.photo) {
-        previewImage.src = pin.photo;
-        previewImage.style.display = "block";
-      } else {
-        previewImage.removeAttribute("src");
-        previewImage.style.display = "none";
-      }
+  photoInput.addEventListener("change", async () => {
+    const files = photoInput.files ? Array.from(photoInput.files) : [];
+    if (!files.length) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      previewImage.src = String(reader.result || "");
-      previewImage.style.display = "block";
-    };
-    reader.readAsDataURL(file);
+    try {
+      const base64Images = await Promise.all(files.map((file) => fileToBase64(file)));
+      photoData = [...photoData, ...base64Images];
+      renderPinDetailPhotoGrid(photoData, photoGrid);
+      photoInput.value = "";
+    } catch (error) {
+      console.warn("Could not read selected image.", error);
+    }
   });
 
-  saveButton.addEventListener("click", async () => {
+  saveButton.addEventListener("click", () => {
     const nextName = nameInput.value.trim();
     if (!nextName) {
       nameInput.focus();
@@ -318,15 +328,10 @@ function openPinDetailModal(pinId) {
     }
 
     pin.name = nextName;
+    pin.date = dateInput.value || "";
     pin.notes = notesInput.value.trim();
-    if (selectedPhotoFile) {
-      try {
-        pin.photo = await fileToBase64(selectedPhotoFile);
-      } catch (error) {
-        console.warn("Could not read selected image.", error);
-        return;
-      }
-    }
+    pin.photos = photoData;
+    pin.photo = photoData.length ? photoData[0] : null;
 
     savePinsToStorage();
     closePinDetailModal();
@@ -342,8 +347,6 @@ function openPinDetailModal(pinId) {
     removePin(pin.id);
   });
 
-  closeButton.addEventListener("click", closePinDetailModal);
-
   backdrop.addEventListener("click", (event) => {
     if (event.target === backdrop) {
       closePinDetailModal();
@@ -355,6 +358,35 @@ function openPinDetailModal(pinId) {
   });
 
   nameInput.focus();
+}
+
+function normalizePinPhotos(pin) {
+  if (Array.isArray(pin.photos)) {
+    return pin.photos.filter((photo) => typeof photo === "string" && photo.length > 0);
+  }
+  if (typeof pin.photo === "string" && pin.photo.length > 0) {
+    return [pin.photo];
+  }
+  return [];
+}
+
+function renderPinDetailPhotoGrid(photos, container) {
+  container.innerHTML = "";
+  if (!photos.length) {
+    const empty = document.createElement("div");
+    empty.className = "pin-detail-photo-empty";
+    empty.textContent = "No photos yet";
+    container.appendChild(empty);
+    return;
+  }
+
+  photos.forEach((photo) => {
+    const thumb = document.createElement("img");
+    thumb.className = "pin-detail-photo-thumb";
+    thumb.src = photo;
+    thumb.alt = "Memory photo";
+    container.appendChild(thumb);
+  });
 }
 
 function closePinDetailModal() {
