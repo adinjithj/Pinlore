@@ -37,20 +37,22 @@
       </button>
     </header>
 
-    <main id="map" aria-label="Memory map"></main>
-    <aside class="memory-sidebar" aria-label="Memories">
-      <div class="memory-sidebar-header">
-        <h2 class="memory-sidebar-title">Memories</h2>
-        <input
-          id="memorySidebarSearch"
-          class="memory-sidebar-search"
-          type="text"
-          placeholder="Search memories..."
-          aria-label="Search memories"
-        />
+    <div class="app-container">
+      <main id="map" aria-label="Memory map"></main>
+      <aside class="memory-sidebar" aria-label="Memories">
+        <div class="memory-sidebar-header">
+          <h2 class="memory-sidebar-title">Memories</h2>
+          <input
+            id="memorySidebarSearch"
+            class="memory-sidebar-search"
+            type="text"
+            placeholder="Search memories..."
+            aria-label="Search memories"
+          />
+        </div>
+        <div id="memorySidebarList" class="memory-sidebar-list"></div>
+      </aside>
       </div>
-      <div id="memorySidebarList" class="memory-sidebar-list"></div>
-    </aside>
 
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
