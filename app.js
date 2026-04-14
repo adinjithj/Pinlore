@@ -188,7 +188,8 @@ function renderPin(pin) {
   );
 
   marker.on("popupopen", () => {
-    const removeButton = document.querySelector(`.remove-pin-btn[data-pin-id="${pin.id}"]`);
+    const popupEl = marker.getPopup().getElement();
+    const removeButton = popupEl.querySelector(".remove-pin-btn");    
     if (!removeButton) {
       return;
     }
