@@ -193,63 +193,8 @@ function drawLifePath() {
 ---------------------------- */
 function registerMapClickHandler() {
   map.on("click", (event) => {
-    openPinNamePopup(event.latlng);
+    openPinDetailModal(null, event.latlng);
   });
-}
-
-function openPinNamePopup(latlng) {
-  const popupContent = `
-    <div class="pin-popup" id="pinForm">
-      <label for="pinNameInput">Name this memory</label>
-      <input id="pinNameInput" type="text" maxlength="80" placeholder="Ex: First solo trip" />
-      <button type="button" id="dropPinBtn">Drop Pin</button>
-      <div class="error" id="pinError">Please enter a name before dropping the pin.</div>
-    </div>
-  `;
-
-  const popup = L.popup({ closeButton: true, autoClose: true, closeOnClick: false })
-    .setLatLng(latlng)
-    .setContent(popupContent)
-    .openOn(map);
-
-  setTimeout(() => {
-    const nameInput = document.getElementById("pinNameInput");
-    const errorText = document.getElementById("pinError");
-    const dropBtn = document.getElementById("dropPinBtn");
-
-    if (!dropBtn || !nameInput || !errorText) return;
-
-    nameInput.focus();
-
-    dropBtn.addEventListener("click", () => {
-      const name = nameInput.value.trim();
-      if (!name) {
-        errorText.style.display = "block";
-        return;
-      }
-
-      const today = new Date().toISOString().slice(0, 10);
-      const providedDateInput = document.getElementById("pinDateInput");
-      const providedDateValue = providedDateInput ? providedDateInput.value : "";
-      const date = /^\d{4}-\d{2}-\d{2}$/.test(providedDateValue) ? providedDateValue : today;
-
-      const newPin = {
-        id: generateId(),
-        name,
-        lat: latlng.lat,
-        lng: latlng.lng,
-        date,
-        notes: "",
-        photos: [],
-        photo: null,
-      };
-
-      pins.push(newPin);
-      savePinsToStorage();
-      renderAllPins();
-      map.closePopup(popup);
-    });
-  }, 50);
 }
 
 /* ---------------------------
@@ -301,15 +246,22 @@ function removePin(pinId) {
   renderAllPins();
 }
 
-function openPinDetailModal(pinId) {
-  const pin = pins.find((item) => item.id === pinId);
-  if (!pin) {
+function openPinDetailModal(pinId, latlng = null) {
+  const today = new Date().toISOString().slice(0, 10);
+  const pin = pinId ? pins.find((item) => item.id === pinId) : null;
+  const isNewPin = !pin;
+
+  if (isNewPin && !latlng) {
+    return;
+  }
+
+  if (!isNewPin && !pin) {
     return;
   }
 
   closePinDetailModal();
 
-  const initialPhotos = normalizePinPhotos(pin);
+  const initialPhotos = normalizePinPhotos(pin || {});
   let photoData = [...initialPhotos];
 
   const modal = document.createElement("div");
@@ -382,9 +334,9 @@ function openPinDetailModal(pinId) {
     return;
   }
 
-  nameInput.value = pin.name || "";
-  dateInput.value = pin.date || "";
-  notesInput.value = pin.notes || "";
+  nameInput.value = pin ? pin.name || "" : "";
+  dateInput.value = pin ? pin.date || today : today;
+  notesInput.value = pin ? pin.notes || "" : "";
   renderPinDetailPhotoGrid(photoData, photoGrid);
 
   photoInput.addEventListener("change", async () => {
@@ -410,25 +362,46 @@ function openPinDetailModal(pinId) {
       return;
     }
 
-    pin.name = nextName;
-    pin.date = dateInput.value || "";
-    pin.notes = notesInput.value.trim();
-    pin.photos = photoData;
-    pin.photo = photoData.length ? photoData[0] : null;
+    const nextDate = /^\d{4}-\d{2}-\d{2}$/.test(dateInput.value) ? dateInput.value : today;
+
+    if (isNewPin) {
+      const newPin = {
+        id: generateId(),
+        name: nextName,
+        lat: latlng.lat,
+        lng: latlng.lng,
+        date: nextDate,
+        notes: notesInput.value.trim(),
+        photos: photoData,
+        photo: photoData.length ? photoData[0] : null,
+      };
+
+      pins.push(newPin);
+    } else {
+      pin.name = nextName;
+      pin.date = nextDate;
+      pin.notes = notesInput.value.trim();
+      pin.photos = photoData;
+      pin.photo = photoData.length ? photoData[0] : null;
+    }
 
     savePinsToStorage();
     closePinDetailModal();
     renderAllPins();
   });
 
-  deleteButton.addEventListener("click", () => {
-    const confirmed = window.confirm("Delete this pin?");
-    if (!confirmed) {
-      return;
-    }
-    closePinDetailModal();
-    removePin(pin.id);
-  });
+  if (isNewPin) {
+    deleteButton.style.display = "none";
+  } else {
+    deleteButton.addEventListener("click", () => {
+      const confirmed = window.confirm("Delete this pin?");
+      if (!confirmed) {
+        return;
+      }
+      closePinDetailModal();
+      removePin(pin.id);
+    });
+  }
 
   backdrop.addEventListener("click", (event) => {
     if (event.target === backdrop) {
