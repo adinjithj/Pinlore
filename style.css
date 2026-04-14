@@ -58,6 +58,7 @@ body::before {
   display: flex;
   height: 100vh;
   width: 100%;
+  position: relative;
 }
 
 #map {
@@ -201,6 +202,10 @@ body::before {
   padding: 0.62rem;
   font-size: 0.84rem;
   color: var(--text-muted);
+}
+
+.sidebar-toggle-btn {
+  display: none;
 }
 
 .app-title {
@@ -377,6 +382,53 @@ body::before {
     min-height: 220px;
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.16);
+  }
+}
+
+@media (max-width: 768px) {
+  #map {
+    width: 100%;
+  }
+
+  .memory-sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(320px, 88vw);
+    height: 100%;
+    min-height: 0;
+    border-top: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
+    transform: translateX(105%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 260ms ease, opacity 260ms ease;
+    z-index: 1300;
+  }
+
+  body.sidebar-open .memory-sidebar {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .sidebar-toggle-btn {
+    display: inline-flex;
+    position: fixed;
+    right: 0.9rem;
+    bottom: 0.9rem;
+    z-index: 1500;
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    padding: 0.55rem 0.9rem;
+    background: color-mix(in srgb, var(--bg-panel) 90%, transparent);
+    color: var(--text-main);
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(10, 25, 47, 0.24);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 }
 

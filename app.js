@@ -48,6 +48,7 @@ attemptLiveLocationCentering();
 registerMapClickHandler();
 registerLocationSearch();
 registerMemorySidebarSearch();
+initializeSidebarToggle();
 
 /* ---------------------------
    Theme setup and persistence
@@ -424,6 +425,43 @@ function registerMemorySidebarSearch() {
   memorySidebarSearch.addEventListener("input", () => {
     memorySidebarQuery = memorySidebarSearch.value.trim().toLowerCase();
     renderMemorySidebar();
+  });
+}
+
+function initializeSidebarToggle() {
+  const sidebar = document.querySelector(".memory-sidebar");
+  if (!sidebar) {
+    return;
+  }
+
+  const toggleButton = document.createElement("button");
+  toggleButton.type = "button";
+  toggleButton.className = "sidebar-toggle-btn";
+  toggleButton.textContent = "Memories";
+  toggleButton.setAttribute("aria-label", "Toggle memories sidebar");
+  document.body.appendChild(toggleButton);
+
+  toggleButton.addEventListener("click", () => {
+    document.body.classList.toggle("sidebar-open");
+  });
+
+  document.addEventListener("click", (event) => {
+    if (window.innerWidth >= 768) {
+      return;
+    }
+    if (!document.body.classList.contains("sidebar-open")) {
+      return;
+    }
+    if (sidebar.contains(event.target) || toggleButton.contains(event.target)) {
+      return;
+    }
+    document.body.classList.remove("sidebar-open");
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth >= 768) {
+      document.body.classList.remove("sidebar-open");
+    }
   });
 }
 
