@@ -475,9 +475,8 @@ function renderMemorySidebar() {
     item.appendChild(date);
     item.addEventListener("click", () => {
       selectedSidebarPinId = pin.id;
-      map.setView([pin.lat, pin.lng], 13);
+      map.flyTo([pin.lat, pin.lng], 13, { duration: 1.2 });
       renderMemorySidebar();
-      openPinDetailModal(pin.id);
     });
 
     memorySidebarList.appendChild(item);
