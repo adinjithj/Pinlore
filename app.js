@@ -25,6 +25,8 @@ const themeToggleButton = document.getElementById("themeToggle");
 const markers = new Map();
 
 let map;
+let lightLayer;
+let darkLayer;
 
 /* ---------------------------
    App startup
@@ -52,6 +54,27 @@ function toggleTheme() {
 
   applyTheme(nextTheme);
   localStorage.setItem(STORAGE_KEYS.theme, nextTheme);
+
+  if (!map || !lightLayer || !darkLayer) {
+    return;
+  }
+
+  if (nextTheme === "dark") {
+    if (map.hasLayer(lightLayer)) {
+      map.removeLayer(lightLayer);
+    }
+    if (!map.hasLayer(darkLayer)) {
+      darkLayer.addTo(map);
+    }
+    return;
+  }
+
+  if (map.hasLayer(darkLayer)) {
+    map.removeLayer(darkLayer);
+  }
+  if (!map.hasLayer(lightLayer)) {
+    lightLayer.addTo(map);
+  }
 }
 
 function applyTheme(theme) {
@@ -65,10 +88,23 @@ function applyTheme(theme) {
 function initializeMap() {
   map = L.map("map").setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  lightLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: "&copy; OpenStreetMap contributors",
-  }).addTo(map);
+  });
+
+  darkLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+  });
+
+  lightLayer.addTo(map);
+
+  const activeTheme = document.documentElement.getAttribute("data-theme");
+  if (activeTheme === "dark") {
+    map.removeLayer(lightLayer);
+    darkLayer.addTo(map);
+  }
 }
 
 /* ---------------------------
