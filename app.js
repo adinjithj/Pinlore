@@ -23,6 +23,8 @@ const pins = loadPinsFromStorage();
 const themeToggleButton = document.getElementById("themeToggle");
 const locationSearchInput = document.getElementById("locationSearchInput");
 const locationSearchDropdown = document.getElementById("locationSearchDropdown");
+const memorySidebarSearch = document.getElementById("memorySidebarSearch");
+const memorySidebarList = document.getElementById("memorySidebarList");
 
 const markers = new Map();
 
@@ -33,6 +35,8 @@ let lifePathLine;
 let searchResultMarker;
 let searchDebounceTimer;
 let searchSuggestions = [];
+let selectedSidebarPinId = null;
+let memorySidebarQuery = "";
 
 /* ---------------------------
    App startup
@@ -43,6 +47,7 @@ renderStoredPins();
 attemptLiveLocationCentering();
 registerMapClickHandler();
 registerLocationSearch();
+registerMemorySidebarSearch();
 
 /* ---------------------------
    Theme setup and persistence
@@ -153,6 +158,7 @@ function renderAllPins() {
   });
 
   drawLifePath();
+  renderMemorySidebar();
 }
 
 function drawLifePath() {
@@ -407,6 +413,77 @@ function showTemporarySearchMarker(lat, lon, label) {
   }, 5000);
 }
 
+function registerMemorySidebarSearch() {
+  if (!memorySidebarSearch) {
+    return;
+  }
+
+  memorySidebarSearch.addEventListener("input", () => {
+    memorySidebarQuery = memorySidebarSearch.value.trim().toLowerCase();
+    renderMemorySidebar();
+  });
+}
+
+function renderMemorySidebar() {
+  if (!memorySidebarList) {
+    return;
+  }
+
+  memorySidebarList.innerHTML = "";
+
+  const sortedPins = [...pins].sort((a, b) => {
+    const aTime = new Date(a.date || "").getTime();
+    const bTime = new Date(b.date || "").getTime();
+    return bTime - aTime;
+  });
+
+  const visiblePins = sortedPins.filter((pin) => {
+    if (!memorySidebarQuery) {
+      return true;
+    }
+
+    const name = String(pin.name || "").toLowerCase();
+    const notes = String(pin.notes || "").toLowerCase();
+    return name.includes(memorySidebarQuery) || notes.includes(memorySidebarQuery);
+  });
+
+  if (!visiblePins.length) {
+    const emptyState = document.createElement("div");
+    emptyState.className = "memory-sidebar-empty";
+    emptyState.textContent = "No memories found.";
+    memorySidebarList.appendChild(emptyState);
+    return;
+  }
+
+  visiblePins.forEach((pin) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "memory-sidebar-item";
+    if (pin.id === selectedSidebarPinId) {
+      item.classList.add("active");
+    }
+
+    const title = document.createElement("div");
+    title.className = "memory-sidebar-item-title";
+    title.textContent = pin.name || "Untitled memory";
+
+    const date = document.createElement("div");
+    date.className = "memory-sidebar-item-date";
+    date.textContent = pin.date || "No date";
+
+    item.appendChild(title);
+    item.appendChild(date);
+    item.addEventListener("click", () => {
+      selectedSidebarPinId = pin.id;
+      map.setView([pin.lat, pin.lng], 13);
+      renderMemorySidebar();
+      openPinDetailModal(pin.id);
+    });
+
+    memorySidebarList.appendChild(item);
+  });
+}
+
 /* ---------------------------
    Handle map clicks and ask for memory name
 ---------------------------- */
@@ -428,6 +505,8 @@ function renderPin(pin) {
     sticky: true,
   });
   marker.on("click", () => {
+    selectedSidebarPinId = pin.id;
+    renderMemorySidebar();
     openPinDetailModal(pin.id);
   });
 }
@@ -461,6 +540,9 @@ function removePin(pinId) {
   }
 
   pins.splice(pinIndex, 1);
+  if (selectedSidebarPinId === pinId) {
+    selectedSidebarPinId = null;
+  }
   savePinsToStorage();
   renderAllPins();
 }
@@ -596,12 +678,14 @@ function openPinDetailModal(pinId, latlng = null) {
       };
 
       pins.push(newPin);
+      selectedSidebarPinId = newPin.id;
     } else {
       pin.name = nextName;
       pin.date = nextDate;
       pin.notes = notesInput.value.trim();
       pin.photos = photoData;
       pin.photo = photoData.length ? photoData[0] : null;
+      selectedSidebarPinId = pin.id;
     }
 
     savePinsToStorage();
