@@ -110,12 +110,12 @@ function registerMapClickHandler() {
 
 function openPinNamePopup(latlng) {
   const popupContent = `
-    <form class="pin-popup" id="pinForm">
+    <div class="pin-popup" id="pinForm">
       <label for="pinNameInput">Name this memory</label>
       <input id="pinNameInput" type="text" maxlength="80" placeholder="Ex: First solo trip" />
-      <button type="submit">Drop Pin</button>
+      <button type="button" id="dropPinBtn">Drop Pin</button>
       <div class="error" id="pinError">Please enter a name before dropping the pin.</div>
-    </form>
+    </div>
   `;
 
   const popup = L.popup({ closeButton: true, autoClose: true, closeOnClick: false })
@@ -134,9 +134,7 @@ function openPinNamePopup(latlng) {
 
     nameInput.focus();
 
-    form.addEventListener("submit", (submitEvent) => {
-      submitEvent.preventDefault();
-
+    document.getElementById("dropPinBtn").addEventListener("click", () => {
       const name = nameInput.value.trim();
       if (!name) {
         errorText.style.display = "block";
