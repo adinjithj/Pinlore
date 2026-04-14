@@ -22,6 +22,8 @@ const STORAGE_KEYS = {
 const pins = loadPinsFromStorage();
 const themeToggleButton = document.getElementById("themeToggle");
 
+const markers = new Map();
+
 let map;
 
 /* ---------------------------
@@ -94,6 +96,15 @@ function attemptLiveLocationCentering() {
    Render all pins saved in local storage
 ---------------------------- */
 function renderStoredPins() {
+  renderAllPins();
+}
+
+function renderAllPins() {
+  markers.forEach((marker) => {
+    map.removeLayer(marker);
+  });
+  markers.clear();
+
   pins.forEach((pin) => {
     renderPin(pin);
   });
@@ -150,7 +161,7 @@ function openPinNamePopup(latlng) {
 
       pins.push(newPin);
       savePinsToStorage();
-      renderPin(newPin);
+      renderAllPins();
       map.closePopup(popup);
     });
   }, 50);
@@ -161,6 +172,7 @@ function openPinNamePopup(latlng) {
 ---------------------------- */
 function renderPin(pin) {
   const marker = L.marker([pin.lat, pin.lng]).addTo(map);
+  markers.set(pin.id, marker);
   marker.bindTooltip(pin.name, {
     direction: "top",
     opacity: 0.95,
@@ -182,7 +194,7 @@ function renderPin(pin) {
     }
 
     removeButton.addEventListener("click", () => {
-      removePin(pin.id, marker);
+      removePin(pin.id);
     });
   });
 }
@@ -209,7 +221,7 @@ function savePinsToStorage() {
   localStorage.setItem(STORAGE_KEYS.pins, JSON.stringify(pins));
 }
 
-function removePin(pinId, marker) {
+function removePin(pinId) {
   const pinIndex = pins.findIndex((pin) => pin.id === pinId);
   if (pinIndex === -1) {
     return;
@@ -217,7 +229,7 @@ function removePin(pinId, marker) {
 
   pins.splice(pinIndex, 1);
   savePinsToStorage();
-  map.removeLayer(marker);
+  renderAllPins();
 }
 
 /* ---------------------------
