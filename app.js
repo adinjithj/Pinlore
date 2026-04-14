@@ -22,6 +22,7 @@ const STORAGE_KEYS = {
 const pins = loadPinsFromStorage();
 const themeToggleButton = document.getElementById("themeToggle");
 const locationSearchInput = document.getElementById("locationSearchInput");
+const locationSearchDropdown = document.getElementById("locationSearchDropdown");
 
 const markers = new Map();
 
@@ -30,6 +31,8 @@ let lightLayer;
 let darkLayer;
 let lifePathLine;
 let searchResultMarker;
+let searchDebounceTimer;
+let searchSuggestions = [];
 
 /* ---------------------------
    App startup
@@ -192,9 +195,25 @@ function drawLifePath() {
 }
 
 function registerLocationSearch() {
-  if (!locationSearchInput) {
+  if (!locationSearchInput || !locationSearchDropdown) {
     return;
   }
+
+  locationSearchInput.addEventListener("input", () => {
+    const query = locationSearchInput.value.trim();
+    if (!query) {
+      clearSearchSuggestions();
+      return;
+    }
+
+    if (searchDebounceTimer) {
+      clearTimeout(searchDebounceTimer);
+    }
+
+    searchDebounceTimer = setTimeout(async () => {
+      await fetchSearchSuggestions(query);
+    }, 300);
+  });
 
   locationSearchInput.addEventListener("keydown", async (event) => {
     if (event.key !== "Enter") {
@@ -202,49 +221,113 @@ function registerLocationSearch() {
     }
 
     event.preventDefault();
+
+    if (searchSuggestions.length > 0) {
+      selectSearchSuggestion(searchSuggestions[0]);
+      return;
+    }
+
     const query = locationSearchInput.value.trim();
     if (!query) {
       return;
     }
 
-    await searchLocationAndCenter(query);
-  });
-}
-
-async function searchLocationAndCenter(query) {
-  try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Search failed with status ${response.status}`);
-    }
-
-    const results = await response.json();
-    if (!Array.isArray(results) || results.length === 0) {
+    const fallbackResults = await fetchSearchResults(query, 1);
+    if (!fallbackResults.length) {
       window.alert("No locations found.");
       return;
     }
 
-    const firstResult = results[0];
-    const lat = Number(firstResult.lat);
-    const lon = Number(firstResult.lon);
+    selectSearchSuggestion(fallbackResults[0]);
+  });
 
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-      window.alert("Invalid location result.");
+  locationSearchInput.addEventListener("blur", () => {
+    setTimeout(() => {
+      clearSearchSuggestions();
+    }, 120);
+  });
+}
+
+async function fetchSearchSuggestions(query) {
+  try {
+    const results = await fetchSearchResults(query, 5);
+    if (!results.length) {
+      renderSearchSuggestions([]);
       return;
     }
 
-    map.setView([lat, lon], 12);
-    showTemporarySearchMarker(lat, lon, firstResult.display_name || query);
+    renderSearchSuggestions(results);
   } catch (error) {
     console.warn("Location search failed.", error);
-    window.alert("Could not search location right now.");
+    renderSearchSuggestions([]);
   }
+}
+
+async function fetchSearchResults(query, limit) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=${limit}&q=${encodeURIComponent(query)}`;
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Search failed with status ${response.status}`);
+  }
+
+  const results = await response.json();
+  return Array.isArray(results) ? results.slice(0, limit) : [];
+}
+
+function renderSearchSuggestions(results) {
+  searchSuggestions = results;
+  locationSearchDropdown.innerHTML = "";
+
+  if (!results.length) {
+    const emptyItem = document.createElement("div");
+    emptyItem.className = "location-search-item is-empty";
+    emptyItem.textContent = "No locations found";
+    locationSearchDropdown.appendChild(emptyItem);
+    locationSearchDropdown.hidden = false;
+    return;
+  }
+
+  results.forEach((result) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "location-search-item";
+    item.textContent = result.display_name || "Unknown location";
+    item.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+    });
+    item.addEventListener("click", () => {
+      selectSearchSuggestion(result);
+    });
+    locationSearchDropdown.appendChild(item);
+  });
+
+  locationSearchDropdown.hidden = false;
+}
+
+function clearSearchSuggestions() {
+  searchSuggestions = [];
+  locationSearchDropdown.innerHTML = "";
+  locationSearchDropdown.hidden = true;
+}
+
+function selectSearchSuggestion(result) {
+  const lat = Number(result.lat);
+  const lon = Number(result.lon);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    window.alert("Invalid location result.");
+    return;
+  }
+
+  map.setView([lat, lon], 12);
+  showTemporarySearchMarker(lat, lon, result.display_name || locationSearchInput.value.trim());
+  locationSearchInput.value = result.display_name || locationSearchInput.value.trim();
+  clearSearchSuggestions();
 }
 
 function showTemporarySearchMarker(lat, lon, label) {

@@ -16,12 +16,16 @@
   <body>
     <header class="top-bar">
       <h1 class="app-title">Pinlore</h1>
-      <input
-        id="locationSearchInput"
-        type="text"
-        placeholder="Search location..."
-        aria-label="Search location"
-      />
+      <div class="location-search-wrap">
+        <input
+          id="locationSearchInput"
+          type="text"
+          placeholder="Search location..."
+          aria-label="Search location"
+          autocomplete="off"
+        />
+        <div id="locationSearchDropdown" class="location-search-dropdown" hidden></div>
+      </div>
       <button
         id="themeToggle"
         class="theme-toggle"
