@@ -27,6 +27,7 @@ const markers = new Map();
 let map;
 let lightLayer;
 let darkLayer;
+let lifePathLine;
 
 /* ---------------------------
    App startup
@@ -144,6 +145,47 @@ function renderAllPins() {
   pins.forEach((pin) => {
     renderPin(pin);
   });
+
+  drawLifePath();
+}
+
+function drawLifePath() {
+  if (!map) {
+    return;
+  }
+
+  if (lifePathLine) {
+    map.removeLayer(lifePathLine);
+    lifePathLine = null;
+  }
+
+  const sortedPins = [...pins].sort((a, b) => {
+    const aTime = new Date(a.date).getTime();
+    const bTime = new Date(b.date).getTime();
+    return aTime - bTime;
+  });
+
+  const pathPoints = sortedPins
+    .map((pin) => [pin.lat, pin.lng])
+    .filter(([lat, lng]) => Number.isFinite(lat) && Number.isFinite(lng));
+
+  if (pathPoints.length < 2) {
+    return;
+  }
+
+  const accentColor =
+    getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2a7fff";
+
+  lifePathLine = L.polyline(pathPoints, {
+    color: accentColor,
+    weight: 3,
+    opacity: 0.72,
+    smoothFactor: 1,
+    lineCap: "round",
+    lineJoin: "round",
+  }).addTo(map);
+
+  lifePathLine.bringToBack();
 }
 
 /* ---------------------------
@@ -186,12 +228,17 @@ function openPinNamePopup(latlng) {
         return;
       }
 
+      const today = new Date().toISOString().slice(0, 10);
+      const providedDateInput = document.getElementById("pinDateInput");
+      const providedDateValue = providedDateInput ? providedDateInput.value : "";
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(providedDateValue) ? providedDateValue : today;
+
       const newPin = {
         id: generateId(),
         name,
         lat: latlng.lat,
         lng: latlng.lng,
-        date: "",
+        date,
         notes: "",
         photos: [],
         photo: null,
