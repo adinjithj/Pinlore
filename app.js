@@ -513,6 +513,7 @@ function renderMemorySidebar() {
     item.addEventListener("click", () => {
       selectedSidebarPinId = pin.id;
       map.flyTo([pin.lat, pin.lng], 13, { duration: 1.2 });
+      document.body.classList.remove("sidebar-open");
       renderMemorySidebar();
     });
 
