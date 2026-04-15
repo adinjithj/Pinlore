@@ -438,7 +438,7 @@ function initializeSidebarToggle() {
   const toggleButton = document.createElement("button");
   toggleButton.type = "button";
   toggleButton.className = "sidebar-toggle-btn";
-  toggleButton.textContent = "Memories";
+  toggleButton.textContent = "☰";
   toggleButton.setAttribute("aria-label", "Toggle memories sidebar");
   document.body.appendChild(toggleButton);
 
