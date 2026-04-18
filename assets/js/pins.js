@@ -88,7 +88,7 @@ export function drawLifePath(map, pins, segments) {
   segments.forEach(s => map.removeLayer(s));
   segments.length = 0;
 
-  const sorted = [...pins].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const sorted = [...pins].sort(sortPinsByDate);
   const points = sorted.map(p => {
     const lat = Number(p.lat);
     const lng = Number(p.lng);
@@ -118,6 +118,25 @@ export function drawLifePath(map, pins, segments) {
   }
 }
 
+function sortPinsByDate(a, b) {
+  const dateA = new Date(a.date || 0).getTime();
+  const dateB = new Date(b.date || 0).getTime();
+
+  if (dateA !== dateB) {
+    return dateB - dateA;
+  }
+
+  const tsA = (a.createdAt || a.updatedAt || 0);
+  const tsB = (b.createdAt || b.updatedAt || 0);
+  if (tsA !== tsB) {
+    return tsB - tsA;
+  }
+
+  const nameA = (a.name || "").toLowerCase();
+  const nameB = (b.name || "").toLowerCase();
+  return nameA.localeCompare(nameB);
+}
+
 export function renderSidebar(pins, selectedId, query, onSelect) {
   const list = document.getElementById("memorySidebarList");
   if (!list) return;
@@ -125,7 +144,7 @@ export function renderSidebar(pins, selectedId, query, onSelect) {
 
   const filtered = pins
     .filter(p => !query || (p.name + p.notes).toLowerCase().includes(query.toLowerCase()))
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort(sortPinsByDate);
 
   if (!filtered.length) {
     const empty = document.createElement("div");

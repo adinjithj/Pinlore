@@ -24,8 +24,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L1",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "app_initializetheme",
@@ -60,8 +60,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L101",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "app_attemptlivelocationcentering",
@@ -69,8 +69,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L128",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "app_renderstoredpins",
@@ -105,8 +105,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L205",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "app_fetchsearchsuggestions",
@@ -150,8 +150,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L352",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "app_clearsearchsuggestions",
@@ -186,8 +186,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L418",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "app_initializesidebartoggle",
@@ -195,8 +195,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L429",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "app_rendermemorysidebar",
@@ -213,8 +213,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L533",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "app_renderpin",
@@ -240,8 +240,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L616",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "app_loadpinsfromstorage",
@@ -249,8 +249,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L627",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "app_savepinstostorage",
@@ -312,8 +312,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L868",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "app_generateid",
@@ -321,8 +321,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\app.js",
       "source_location": "L880",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "main",
@@ -483,8 +483,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
       "source_location": "L1",
-      "community": 2,
-      "community_name": "Community 2"
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "pins_pinsvg",
@@ -492,8 +492,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
       "source_location": "L3",
-      "community": 2,
-      "community_name": "Community 2"
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "pins_pinsvgwithphoto",
@@ -501,8 +501,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
       "source_location": "L11",
-      "community": 2,
-      "community_name": "Community 2"
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "pins_selectedpinsvg",
@@ -510,8 +510,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
       "source_location": "L17",
-      "community": 2,
-      "community_name": "Community 2"
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "pins_getcurrentaccent",
@@ -519,8 +519,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
       "source_location": "L25",
-      "community": 2,
-      "community_name": "Community 2"
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "pins_createcustomicon",
@@ -528,8 +528,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
       "source_location": "L32",
-      "community": 2,
-      "community_name": "Community 2"
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "pins_createselectedicon",
@@ -537,8 +537,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
       "source_location": "L43",
-      "community": 2,
-      "community_name": "Community 2"
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "pins_rendermarkers",
@@ -546,8 +546,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
       "source_location": "L53",
-      "community": 2,
-      "community_name": "Community 2"
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "pins_setmarkerselected",
@@ -555,8 +555,8 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
       "source_location": "L82",
-      "community": 2,
-      "community_name": "Community 2"
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "pins_drawlifepath",
@@ -564,26 +564,35 @@
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
       "source_location": "L87",
-      "community": 2,
-      "community_name": "Community 2"
+      "community": 1,
+      "community_name": "Community 1"
+    },
+    {
+      "id": "pins_sortpinsbydate",
+      "label": "sortPinsByDate()",
+      "file_type": "code",
+      "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
+      "source_location": "L121",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "pins_rendersidebar",
       "label": "renderSidebar()",
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
-      "source_location": "L121",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L140",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "pins_buildpinpopupcontent",
       "label": "buildPinPopupContent()",
       "file_type": "code",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
-      "source_location": "L148",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L167",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "search",
@@ -1810,11 +1819,23 @@
     },
     {
       "source": "pins",
-      "target": "pins_rendersidebar",
+      "target": "pins_sortpinsbydate",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
       "source_location": "L121",
+      "weight": 1,
+      "_src": "pins",
+      "_tgt": "pins_sortpinsbydate",
+      "confidence_score": 1
+    },
+    {
+      "source": "pins",
+      "target": "pins_rendersidebar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
+      "source_location": "L140",
       "weight": 1,
       "_src": "pins",
       "_tgt": "pins_rendersidebar",
@@ -1826,7 +1847,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\Users\\adinj\\Documents\\githubprojects\\Pinlore\\assets\\js\\pins.js",
-      "source_location": "L148",
+      "source_location": "L167",
       "weight": 1,
       "_src": "pins",
       "_tgt": "pins_buildpinpopupcontent",
