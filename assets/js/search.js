@@ -1,9 +1,20 @@
 import { loadSearchHistory, saveSearchHistory } from "./storage.js";
+import { getCurrentAccent, pinSVG } from "./pins.js";
 
 let searchDebounceTimer;
 let searchSuggestions = [];
 let searchResultMarker;
 let searchHistory = [];
+
+function createSearchIcon() {
+  return L.icon({
+    iconUrl: pinSVG(getCurrentAccent()),
+    iconSize: [40, 52],
+    iconAnchor: [20, 52],
+    popupAnchor: [0, -52],
+    tooltipAnchor: [20, -44],
+  });
+}
 
 export function registerLocationSearch(map) {
   const locationSearchInput = document.getElementById("locationSearchInput");
@@ -125,7 +136,7 @@ function selectSearchSuggestion(result, map, dropdown) {
 
 function showTemporarySearchMarker(lat, lon, label, map) {
   if (searchResultMarker) map.removeLayer(searchResultMarker);
-  searchResultMarker = L.marker([lat, lon]).addTo(map);
+  searchResultMarker = L.marker([lat, lon], { icon: createSearchIcon() }).addTo(map);
   if (label) searchResultMarker.bindPopup(label).openPopup();
   setTimeout(() => {
     if (searchResultMarker) {

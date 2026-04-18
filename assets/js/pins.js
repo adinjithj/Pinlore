@@ -1,26 +1,38 @@
 import { openPinDetailModal, closePinDetailModal } from "./modal.js";
 
-function pinSVG(accent, centerFill = "white", glowBlur = 2) {
-  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 52' width='40' height='52'%3E%3Cdefs%3E%3Cfilter id='g' x='-50%25' y='-50%25' width='200%25' height='200%25'%3E%3CfeGaussianBlur stdDeviation='${glowBlur}' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/defs%3E%3Cpath d='M20 0C9 0 0 9 0 20c0 14 20 32 20 32s20-18 20-32C40 9 31 0 20 0z' fill='${accent}' filter='url(%23g)'/%3E%3Ccircle cx='20' cy='18' r='6' fill='${centerFill}' fill-opacity='0.95'/%3E%3C/svg%3E`;
+export function pinSVG(accent, centerFill = "white", glowBlur = 2) {
+  const clr = accent.replace("#", "%23");
+  const fill = centerFill.replace("#", "%23");
+  const blur = glowBlur > 2 ? 3 : 2;
+  const alpha = glowBlur > 2 ? 0.5 : 0.3;
+  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 52'%3E%3Cdefs%3E%3Cfilter id='g'%3E%3CfeGaussianBlur in='SourceAlpha' stdDeviation='${blur}'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M20 2C10 2 2 10 2 20c0 13 18 30 18 30s18-17 18-30C38 10 30 2 20 2z' fill='${clr}' opacity='${alpha}' filter='url(%23g)'/%3E%3Cpath d='M20 2C10 2 2 10 2 20c0 13 18 30 18 30s18-17 18-30C38 10 30 2 20 2z' fill='${clr}'/%3E%3Ccircle cx='20' cy='18' r='5' fill='${fill}'/%3E%3C/svg%3E`;
 }
 
-function selectedPinSVG(accent, centerFill) {
-  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 56' width='44' height='56'%3E%3Cdefs%3E%3Cfilter id='g' x='-50%25' y='-50%25' width='200%25' height='200%25'%3E%3CfeGaussianBlur stdDeviation='4' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/defs%3E%3Ccircle cx='22' cy='20' r='18' fill='none' stroke='${accent}' stroke-width='2' opacity='0.4'%3E%3Canimate attributeName='r' from='16' to='22' dur='1s' repeatCount='indefinite'/%3E%3Canimate attributeName='opacity' from='0.5' to='0' dur='1s' repeatCount='indefinite'/%3E%3C/circle%3E%3Cpath d='M22 2C10 2 2 10 2 22c0 14 20 32 20 32s20-18 20-32C42 10 34 2 22 2z' fill='${accent}' filter='url(%23g)'/%3E%3Ccircle cx='22' cy='20' r='7' fill='${centerFill}' fill-opacity='0.95'/%3E%3C/svg%3E`;
+export function pinSVGWithPhoto(accent, photoUrl) {
+  const clr = accent.replace("#", "%23");
+  const photoEncoded = photoUrl.replace(/'/g, "%27");
+  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 52' width='40' height='52'%3E%3Cdefs%3E%3CclipPath id='pc'%3E%3Ccircle cx='20' cy='18' r='5'/%3E%3C/clipPath%3E%3Cfilter id='g'%3E%3CfeGaussianBlur stdDeviation='1.5' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/defs%3E%3Cpath d='M20 0C9 0 0 9 0 20c0 14 20 32 20 32s20-18 20-32C40 9 31 0 20 0z' fill='${clr}' filter='url(%23g)'/%3E%3Cimage x='15' y='13' width='10' height='10' clip-path='url(%23pc)' href='${photoEncoded}'/%3E%3C/svg%3E`;
+}
+
+function selectedPinSVG(accent) {
+  const clr = accent.replace("#", "%23");
+  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 56'%3E%3Ccircle cx='22' cy='20' r='18' fill='none' stroke='${clr}' stroke-width='2' opacity='0.4'%3E%3Canimate attributeName='r' from='16' to='22' dur='1.5s' repeatCount='indefinite'/%3E%3Canimate attributeName='opacity' values='0.5;0;0.5' dur='1.5s' repeatCount='indefinite'/%3E%3C/circle%3E%3Cpath d='M22 4C12 4 4 12 4 22c0 13 18 30 18 30s18-17 18-30C40 12 32 4 22 4z' fill='${clr}'/%3E%3Ccircle cx='22' cy='20' r='6' fill='white'/%3E%3C/svg%3E`;
 }
 
 const lightTheme = { accent: "#2a7fff", darkAccent: "#4b9dff" };
 const darkTheme = { accent: "#4b9dff", darkAccent: "#67aeff" };
 
-function getCurrentAccent() {
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-  return isDark ? darkTheme.accent : lightTheme.accent;
+export function getCurrentAccent() {
+  const theme = document.documentElement.getAttribute("data-theme");
+  if (theme === "dark") return darkTheme.accent;
+  if (theme === "light") return lightTheme.accent;
+  return lightTheme.accent;
 }
 
-function createCustomIcon(svgData = null, hover = false) {
+function createCustomIcon(hover = false) {
   const accent = getCurrentAccent();
-  const data = svgData || (hover ? pinSVG(accent, "white", 3) : pinSVG(accent));
   return L.icon({
-    iconUrl: data,
+    iconUrl: hover ? pinSVG(accent, "white", 3) : pinSVG(accent),
     iconSize: [40, 52],
     iconAnchor: [20, 52],
     popupAnchor: [0, -52],
@@ -29,9 +41,8 @@ function createCustomIcon(svgData = null, hover = false) {
 }
 
 function createSelectedIcon() {
-  const accent = getCurrentAccent();
   return L.icon({
-    iconUrl: selectedPinSVG(accent, "white"),
+    iconUrl: selectedPinSVG(getCurrentAccent()),
     iconSize: [44, 56],
     iconAnchor: [22, 56],
     popupAnchor: [0, -56],
@@ -60,10 +71,10 @@ export function renderMarkers(map, pins, markersMap, onEditPin, onSelectPin, sel
 
     const isSelected = selectedIdForHover && pin.id === selectedIdForHover;
     marker.on("mouseover", () => {
-      if (!isSelected) marker.setIcon(createCustomIcon(null, true));
+      if (!isSelected) marker.setIcon(createCustomIcon(true));
     });
     marker.on("mouseout", () => {
-      if (!isSelected) marker.setIcon(createCustomIcon());
+      if (!isSelected) marker.setIcon(createCustomIcon(false));
     });
   });
 }
