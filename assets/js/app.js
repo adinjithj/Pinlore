@@ -106,9 +106,10 @@ function initializeMap() {
     attribution: "&copy; OpenStreetMap contributors",
   });
 
-  darkLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+  darkLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+    attribution: "&copy; OpenStreetMap contributors",
+    fadeAnimation: false,
   });
 
   lightLayer.addTo(map);

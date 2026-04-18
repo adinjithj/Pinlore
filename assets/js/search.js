@@ -1,6 +1,9 @@
+import { loadSearchHistory, saveSearchHistory } from "./storage.js";
+
 let searchDebounceTimer;
 let searchSuggestions = [];
 let searchResultMarker;
+let searchHistory = [];
 
 export function registerLocationSearch(map) {
   const locationSearchInput = document.getElementById("locationSearchInput");
@@ -8,10 +11,12 @@ export function registerLocationSearch(map) {
 
   if (!locationSearchInput || !locationSearchDropdown) return;
 
+  searchHistory = loadSearchHistory();
+
   locationSearchInput.addEventListener("input", () => {
     const query = locationSearchInput.value.trim();
     if (!query) {
-      clearSearchSuggestions(locationSearchDropdown);
+      showSearchHistory(locationSearchDropdown, map);
       return;
     }
     if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
@@ -112,8 +117,10 @@ function selectSearchSuggestion(result, map, dropdown) {
 
   map.setView([lat, lon], 12);
   showTemporarySearchMarker(lat, lon, result.display_name, map);
-  document.getElementById("locationSearchInput").value = result.display_name;
+  const displayName = result.display_name;
+  document.getElementById("locationSearchInput").value = displayName;
   clearSearchSuggestions(dropdown);
+  addSearchToHistory(displayName);
 }
 
 function showTemporarySearchMarker(lat, lon, label, map) {
@@ -132,6 +139,69 @@ function clearSearchSuggestions(dropdown) {
   searchSuggestions = [];
   dropdown.innerHTML = "";
   dropdown.hidden = true;
+}
+
+function addSearchToHistory(query) {
+  const trimmed = query.trim();
+  if (!trimmed) return;
+  searchHistory = searchHistory.filter((h) => h.query !== trimmed);
+  searchHistory.unshift({ query: trimmed, timestamp: Date.now() });
+  searchHistory = searchHistory.slice(0, 10);
+  saveSearchHistory(searchHistory);
+}
+
+function showSearchHistory(dropdown, map) {
+  dropdown.innerHTML = "";
+  if (!searchHistory.length) {
+    dropdown.hidden = true;
+    return;
+  }
+
+  const header = document.createElement("div");
+  header.className = "location-search-history-header";
+  header.textContent = "Recent searches";
+  dropdown.appendChild(header);
+
+  searchHistory.forEach((item) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "location-search-item location-search-history-item";
+    btn.textContent = item.query;
+    btn.addEventListener("mousedown", (e) => e.preventDefault());
+    btn.addEventListener("click", () => selectHistoryItem(item.query, map, dropdown));
+    dropdown.appendChild(btn);
+  });
+
+  const clearBtn = document.createElement("button");
+  clearBtn.type = "button";
+  clearBtn.className = "location-search-item location-search-clear-btn";
+  clearBtn.textContent = "Clear history";
+  clearBtn.addEventListener("mousedown", (e) => e.preventDefault());
+  clearBtn.addEventListener("click", () => clearHistory(dropdown));
+  dropdown.appendChild(clearBtn);
+
+  dropdown.hidden = false;
+}
+
+async function selectHistoryItem(query, map, dropdown) {
+  document.getElementById("locationSearchInput").value = query;
+  clearSearchSuggestions(dropdown);
+  try {
+    const results = await fetchSearchResults(query, 1);
+    if (results.length) {
+      const result = results[0];
+      map.setView([Number(result.lat), Number(result.lon)], 12);
+      showTemporarySearchMarker(Number(result.lat), Number(result.lon), result.display_name, map);
+    }
+  } catch (e) {
+    console.warn("History search failed", e);
+  }
+}
+
+function clearHistory(dropdown) {
+  searchHistory = [];
+  saveSearchHistory([]);
+  clearSearchSuggestions(dropdown);
 }
 
 function formatSuggestionLabel(result) {
