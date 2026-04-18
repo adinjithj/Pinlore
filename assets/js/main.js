@@ -2,7 +2,7 @@ import { loadPins, savePins } from "./storage.js";
 import { initializeTheme } from "./theme.js";
 import { registerLocationSearch } from "./search.js";
 import { openPinDetailModal } from "./modal.js";
-import { renderMarkers, drawLifePath, renderSidebar } from "./pins.js";
+import { renderMarkers, drawLifePath, renderSidebar, setMarkerSelected } from "./pins.js";
 
 const DEFAULT_CENTER = [23.4733, 77.9470];
 const DEFAULT_ZOOM = 7;
@@ -47,10 +47,19 @@ function init() {
 function renderAll() {
   renderMarkers(map, pins, markersMap, onEditPin, (id) => {
     selectedPinId = id;
+    updateMarkerStates();
     renderSidebar(pins, selectedPinId, searchQuery, onSelectSidebarPin);
-  });
+  }, selectedPinId);
   drawLifePath(map, pins, lifePathSegments);
   renderSidebar(pins, selectedPinId, searchQuery, onSelectSidebarPin);
+  updateMarkerStates();
+}
+
+function updateMarkerStates() {
+  markersMap.forEach((marker, id) => {
+    const isSelected = id === selectedPinId;
+    setMarkerSelected(marker, isSelected);
+  });
 }
 
 function onSavePin(newPin) {

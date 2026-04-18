@@ -86,11 +86,12 @@ body::before {
 }
 
 [data-theme="dark"] .leaflet-tile-container {
-  /* Removed filter from container to avoid double inversion */
+  /* Native dark tiles used, no filter needed */
 }
 
 [data-theme="dark"] .leaflet-tile {
-  visibility: hidden;
+  visibility: visible !important;
+  background-color: #1a1c1f !important;
 }
 
 [data-theme="dark"] .leaflet-tile-loaded {
@@ -718,4 +719,33 @@ body.sidebar-open .sidebar-backdrop {
 
 .leaflet-control-zoom a:active {
   transform: scale(0.95);
+}
+
+/* Life Path Premium Styling */
+.life-path-line {
+  stroke-dasharray: 8, 12;
+  animation: life-path-flow 2s linear infinite;
+  stroke-linecap: round;
+}
+
+.life-path-endpoint {
+  filter: drop-shadow(0 0 4px currentColor);
+  animation: life-path-endpoint-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes life-path-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+@keyframes life-path-endpoint-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.3);
+  }
 }

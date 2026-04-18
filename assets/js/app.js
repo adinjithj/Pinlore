@@ -106,10 +106,10 @@ function initializeMap() {
     attribution: "&copy; OpenStreetMap contributors",
   });
 
-  darkLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  darkLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png", {
     maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors",
-    fadeAnimation: false,
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    subdomains: 'abcd',
   });
 
   lightLayer.addTo(map);
@@ -190,19 +190,16 @@ function drawLifePath() {
   const accentColor =
     getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2a7fff";
 
-  for (let i = 0; i < pathPoints.length - 1; i += 1) {
-    const segment = L.polyline([pathPoints[i], pathPoints[i + 1]], {
-      color: accentColor,
-      weight: 3,
-      opacity: 0.72,
-      smoothFactor: 1,
-      lineCap: "round",
-      lineJoin: "round",
-    }).addTo(map);
+  const common = { color: accentColor, smoothFactor: 2, lineCap: "round", lineJoin: "round", interactive: false };
 
-    segment.bringToBack();
-    lifePathSegments.push(segment);
-  }
+  // 1. Outer glow
+  lifePathSegments.push(L.polyline(pathPoints, { ...common, weight: 10, opacity: 0.1 }).addTo(map).bringToBack());
+  // 2. Inner glow
+  lifePathSegments.push(L.polyline(pathPoints, { ...common, weight: 6, opacity: 0.15 }).addTo(map).bringToBack());
+  // 3. Main animated line
+  lifePathSegments.push(L.polyline(pathPoints, { 
+    ...common, weight: 3, opacity: 0.8, className: "life-path-line" 
+  }).addTo(map).bringToBack());
 }
 
 function registerLocationSearch() {
