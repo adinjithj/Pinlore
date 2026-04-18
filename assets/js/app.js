@@ -531,8 +531,8 @@ function registerMapClickHandler() {
 }
 
 /* ---------------------------
-   Create a marker + hover label for one pin
----------------------------- */
+    Create a marker + hover label for one pin
+ ---------------------------- */
 function renderPin(pin) {
   const marker = L.marker([pin.lat, pin.lng]).addTo(map);
   markers.set(pin.id, marker);
@@ -541,10 +541,111 @@ function renderPin(pin) {
     opacity: 0.95,
     sticky: true,
   });
+
+  const popupContent = buildPinPopupContent(pin);
+  marker.bindPopup(popupContent, {
+    maxWidth: 280,
+    className: "pin-popup-container",
+  });
+
   marker.on("click", () => {
     selectedSidebarPinId = pin.id;
     renderMemorySidebar();
+    marker.openPopup();
+  });
+}
+
+function buildPinPopupContent(pin) {
+  const container = document.createElement("div");
+  container.className = "pin-popup";
+
+  const title = document.createElement("div");
+  title.className = "pin-popup-title";
+  title.textContent = pin.name || "Untitled";
+
+  const coords = document.createElement("div");
+  coords.className = "pin-popup-coords";
+  coords.textContent = `${Number(pin.lat).toFixed(4)}, ${Number(pin.lng).toFixed(4)}`;
+
+  // Date
+  if (pin.date) {
+    const date = document.createElement("div");
+    date.className = "pin-popup-date";
+    date.textContent = pin.date;
+    container.appendChild(date);
+  }
+
+  // Notes
+  if (pin.notes) {
+    const notes = document.createElement("div");
+    notes.className = "pin-popup-notes";
+    notes.textContent = pin.notes.length > 100 ? pin.notes.slice(0, 97) + "..." : pin.notes;
+    container.appendChild(notes);
+  }
+
+  // Photos: show small thumbnails if available
+  const photos = Array.isArray(pin.photos) && pin.photos.length
+    ? pin.photos
+    : (typeof pin.photo === "string" && pin.photo) ? [pin.photo] : [];
+
+  if (photos.length) {
+    const grid = document.createElement("div");
+    grid.className = "pin-popup-photo-grid";
+
+    const maxThumbs = 3;
+    photos.slice(0, maxThumbs).forEach((p) => {
+      const thumb = document.createElement("img");
+      thumb.className = "pin-popup-photo-thumb";
+      thumb.src = p;
+      thumb.alt = pin.name || "Memory photo";
+      thumb.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeAllPopups();
+        openPinDetailModal(pin.id);
+      });
+      grid.appendChild(thumb);
+    });
+
+    if (photos.length > maxThumbs) {
+      const more = document.createElement("div");
+      more.className = "pin-popup-photo-more";
+      more.textContent = `+${photos.length - maxThumbs}`;
+      more.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeAllPopups();
+        openPinDetailModal(pin.id);
+      });
+      grid.appendChild(more);
+    }
+
+    container.appendChild(grid);
+  }
+
+  // Insert title and coords near the top for consistent layout
+  container.insertBefore(title, container.firstChild);
+  container.insertBefore(coords, container.children[1] || null);
+
+  // Edit button
+  const editBtn = document.createElement("button");
+  editBtn.type = "button";
+  editBtn.className = "pin-popup-edit-btn";
+  editBtn.textContent = "Edit";
+  editBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeAllPopups();
     openPinDetailModal(pin.id);
+  });
+
+  container.appendChild(editBtn);
+
+  return container;
+}
+
+function closeAllPopups() {
+  markers.forEach((marker) => {
+    if (marker.isPopupOpen()) {
+      marker.closePopup();
+    }
   });
 }
 
