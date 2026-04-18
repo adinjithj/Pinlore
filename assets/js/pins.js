@@ -102,11 +102,20 @@ export function drawLifePath(map, pins, segments) {
   const color = isDark ? "#4b9dff" : "#2a7fff";
   const common = { color, smoothFactor: 2, lineCap: "round", lineJoin: "round", interactive: false, dashArray: "8, 12" };
 
-  segments.push(L.polyline(points, { ...common, weight: 10, opacity: 0.08 }).addTo(map).bringToBack());
-  segments.push(L.polyline(points, { ...common, weight: 5, opacity: 0.18 }).addTo(map).bringToBack());
-  segments.push(L.polyline(points, { 
-    ...common, weight: 2.5, opacity: 0.85, className: "life-path-line", dashOffset: "0" 
-  }).addTo(map).bringToBack());
+  if (isDark) {
+    // Stronger glow for dark mode
+    segments.push(L.polyline(points, { ...common, weight: 12, opacity: 0.15 }).addTo(map).bringToBack());
+    segments.push(L.polyline(points, { ...common, weight: 7, opacity: 0.25 }).addTo(map).bringToBack());
+    segments.push(L.polyline(points, { 
+      ...common, weight: 3, opacity: 0.95, className: "life-path-line", dashOffset: "0" 
+    }).addTo(map).bringToBack());
+  } else {
+    segments.push(L.polyline(points, { ...common, weight: 10, opacity: 0.08 }).addTo(map).bringToBack());
+    segments.push(L.polyline(points, { ...common, weight: 5, opacity: 0.18 }).addTo(map).bringToBack());
+    segments.push(L.polyline(points, { 
+      ...common, weight: 2.5, opacity: 0.85, className: "life-path-line", dashOffset: "0" 
+    }).addTo(map).bringToBack());
+  }
 }
 
 export function renderSidebar(pins, selectedId, query, onSelect) {

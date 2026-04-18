@@ -69,33 +69,16 @@ body::before {
 
 [data-theme="dark"] #map,
 [data-theme="dark"] .leaflet-container {
-  background-color: #07111f !important;
+  background-color: #0d1a2d !important;
 }
-[data-theme="dark"] .leaflet-tile-container {
+
+/* This targets the entire tile pane while preserving markers/popups */
+[data-theme="dark"] .leaflet-tile-pane {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
 [data-theme="dark"] .leaflet-tile {
-  visibility: hidden;
-}
-
-[data-theme="dark"] .leaflet-tile-loaded {
-  visibility: inherit;
-}
-  background-color: #07111f !important;
-}
-
-[data-theme="dark"] .leaflet-tile-container {
-  /* Native dark tiles used, no filter needed */
-}
-
-[data-theme="dark"] .leaflet-tile {
-  visibility: visible !important;
-  background-color: #1a1c1f !important;
-}
-
-[data-theme="dark"] .leaflet-tile-loaded {
-  visibility: inherit;
+  background-color: #0d1a2d !important;
 }
 
 .top-bar {
