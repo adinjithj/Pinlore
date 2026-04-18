@@ -222,18 +222,18 @@ body::before {
   z-index: 1500;
   padding: 0;
   border: 1px solid var(--border-soft);
-  background: rgba(10, 22, 37, 0.85);
+  background: color-mix(in srgb, var(--bg-panel) 92%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: var(--text-main);
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-soft);
   transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .sidebar-toggle-btn:hover {
   transform: scale(1.08);
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-soft);
 }
 
 body.sidebar-open .sidebar-toggle-btn {
@@ -442,7 +442,7 @@ body.sidebar-open .sidebar-backdrop {
 }
 
 
-/* Make the top bar fit comfortably on small screens. */
+/* Make the top bar and Leaflet controls fit comfortably on small screens. */
 @media (max-width: 600px) {
   .top-bar {
     top: 0.7rem;
@@ -458,6 +458,10 @@ body.sidebar-open .sidebar-backdrop {
   .location-search-wrap {
     max-width: none;
     margin: 0 0.5rem;
+  }
+
+  .leaflet-top.leaflet-left {
+    margin-top: 82px !important;
   }
 }
 
