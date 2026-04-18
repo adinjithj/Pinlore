@@ -515,6 +515,14 @@ function renderMemorySidebar() {
       map.flyTo([pin.lat, pin.lng], 13, { duration: 1.2 });
       document.body.classList.remove("sidebar-open");
       renderMemorySidebar();
+
+      // Open the marker popup after the flight finishes
+      setTimeout(() => {
+        const marker = markers.get(pin.id);
+        if (marker) {
+          marker.openPopup();
+        }
+      }, 1300);
     });
 
     memorySidebarList.appendChild(item);
@@ -551,7 +559,7 @@ function renderPin(pin) {
   marker.on("click", () => {
     selectedSidebarPinId = pin.id;
     renderMemorySidebar();
-    marker.openPopup();
+    // Leaflet opens the popup automatically; we do NOT open the modal directly
   });
 }
 
@@ -559,15 +567,23 @@ function buildPinPopupContent(pin) {
   const container = document.createElement("div");
   container.className = "pin-popup";
 
+  // 1. Thumbnail (if exists)
+  const photos = normalizePinPhotos(pin);
+  if (photos.length > 0) {
+    const thumb = document.createElement("img");
+    thumb.className = "pin-popup-thumbnail";
+    thumb.src = photos[0];
+    thumb.alt = pin.name || "Memory photo";
+    container.appendChild(thumb);
+  }
+
+  // 2. Title
   const title = document.createElement("div");
   title.className = "pin-popup-title";
-  title.textContent = pin.name || "Untitled";
+  title.textContent = pin.name || "Untitled memory";
+  container.appendChild(title);
 
-  const coords = document.createElement("div");
-  coords.className = "pin-popup-coords";
-  coords.textContent = `${Number(pin.lat).toFixed(4)}, ${Number(pin.lng).toFixed(4)}`;
-
-  // Date
+  // 3. Date
   if (pin.date) {
     const date = document.createElement("div");
     date.className = "pin-popup-date";
@@ -575,57 +591,15 @@ function buildPinPopupContent(pin) {
     container.appendChild(date);
   }
 
-  // Notes
+  // 4. Note preview
   if (pin.notes) {
     const notes = document.createElement("div");
     notes.className = "pin-popup-notes";
-    notes.textContent = pin.notes.length > 100 ? pin.notes.slice(0, 97) + "..." : pin.notes;
+    notes.textContent = pin.notes;
     container.appendChild(notes);
   }
 
-  // Photos: show small thumbnails if available
-  const photos = Array.isArray(pin.photos) && pin.photos.length
-    ? pin.photos
-    : (typeof pin.photo === "string" && pin.photo) ? [pin.photo] : [];
-
-  if (photos.length) {
-    const grid = document.createElement("div");
-    grid.className = "pin-popup-photo-grid";
-
-    const maxThumbs = 3;
-    photos.slice(0, maxThumbs).forEach((p) => {
-      const thumb = document.createElement("img");
-      thumb.className = "pin-popup-photo-thumb";
-      thumb.src = p;
-      thumb.alt = pin.name || "Memory photo";
-      thumb.addEventListener("click", (e) => {
-        e.stopPropagation();
-        closeAllPopups();
-        openPinDetailModal(pin.id);
-      });
-      grid.appendChild(thumb);
-    });
-
-    if (photos.length > maxThumbs) {
-      const more = document.createElement("div");
-      more.className = "pin-popup-photo-more";
-      more.textContent = `+${photos.length - maxThumbs}`;
-      more.addEventListener("click", (e) => {
-        e.stopPropagation();
-        closeAllPopups();
-        openPinDetailModal(pin.id);
-      });
-      grid.appendChild(more);
-    }
-
-    container.appendChild(grid);
-  }
-
-  // Insert title and coords near the top for consistent layout
-  container.insertBefore(title, container.firstChild);
-  container.insertBefore(coords, container.children[1] || null);
-
-  // Edit button
+  // 5. Edit Button
   const editBtn = document.createElement("button");
   editBtn.type = "button";
   editBtn.className = "pin-popup-edit-btn";
